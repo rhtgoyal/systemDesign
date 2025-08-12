@@ -48,6 +48,12 @@ frontend http_front
 ## 🚀 Deployment Overview
 HAProxy is deployed as a standalone service, typically on a Linux server or container. It runs as a system-level process and listens on configured ports.
 
+### 🔧 Install HA Proxy
+```bash
+sudo apt-get update
+sudo apt-get install haproxy
+```
+
 ### 🔧 Configuration File
 The main configuration file is usually located at /etc/haproxy/haproxy.cfg. It defines:
 - Frontend listeners
