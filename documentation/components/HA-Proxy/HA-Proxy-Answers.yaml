@@ -1,0 +1,103 @@
+Basic Understanding:
+  - question: What is HAProxy and what are its primary use cases?
+    answer: HAProxy is a high-performance TCP/HTTP load balancer and proxy server used to distribute incoming traffic across multiple backend servers, ensuring high availability, scalability, and fault tolerance.
+  - question: How does HAProxy provide high availability and scalability?
+    answer: By distributing requests across multiple servers and automatically removing unhealthy servers from rotation, HAProxy ensures continuous service and can scale horizontally by adding more backend instances.
+  - question: What are the main load balancing algorithms supported by HAProxy?
+    answer: Common algorithms include round-robin, least connections, and source hashing.
+  - question: What is the difference between TCP and HTTP load balancing in HAProxy?
+    answer: TCP load balancing operates at Layer 4, forwarding raw network packets, while HTTP load balancing operates at Layer 7, allowing routing decisions based on HTTP headers, paths, and content.
+
+Configuration & Usage:
+  - question: How do you configure HAProxy to route traffic to multiple backend servers?
+    answer: Define a frontend to listen for requests and a backend with multiple server entries; use a balancing algorithm to distribute traffic.
+  - question: What does the `balance roundrobin` directive do in HAProxy?
+    answer: It distributes requests evenly across all backend servers in a cyclic order.
+  - question: How can you change the port that HAProxy listens on?
+    answer: Modify the `bind` directive in the frontend section to the desired port, e.g., `bind *:8081`.
+  - question: What is the purpose of health checks in HAProxy?
+    answer: Health checks automatically detect and remove unhealthy backend servers from the load balancing pool to prevent routing traffic to them.
+  - question: How do you set up least-connections load balancing?
+    answer: Use `balance leastconn` in the backend configuration to send traffic to the server with the fewest active connections.
+  - question: How do you configure SSL termination in HAProxy?
+    answer: Use the `bind` directive with the `ssl` option and specify the certificate file, e.g., `bind *:443 ssl crt /etc/haproxy/certs/site.pem`.
+
+Deployment & Installation:
+  - question: How do you install HAProxy on a Linux server?
+    answer: Run `sudo apt-get update` and `sudo apt-get install haproxy`.
+  - question: Where is the main HAProxy configuration file located?
+    answer: The main configuration file is typically at `/etc/haproxy/haproxy.cfg`.
+  - question: How do you reload HAProxy with a new configuration without dropping connections?
+    answer: Use `systemctl reload haproxy` or `service haproxy reload` for a graceful reload.
+  - question: What is a graceful reload and why is it important?
+    answer: A graceful reload updates the configuration without interrupting active connections, ensuring no requests are lost during the process.
+
+Advanced Routing:
+  - question: How can HAProxy route requests based on URL path or host header?
+    answer: Use ACLs (Access Control Lists) in the frontend to match paths or host headers and direct traffic to specific backends.
+  - question: Can you provide an example of path-based routing in HAProxy?
+    answer: Yes.  
+      ```
+      frontend api_gateway
+          bind *:80
+          acl is_orders path_beg /orders
+          use_backend orders_backend if is_orders
+      backend orders_backend
+          server orders1 127.0.0.1:9001 check
+      ```
+  - question: How does HAProxy handle hundreds of microservices behind a single port?
+    answer: By using smart routing strategies (path, host, header-based) and defining multiple backends, HAProxy can multiplex requests to many services through one external port.
+  - question: How do you implement header-based routing in HAProxy?
+    answer: Use ACLs to match specific HTTP headers and route requests to the appropriate backend, e.g., `acl is_api hdr(x-api-version) -i v2`.
+  - question: How can you restrict access to certain backends based on client IP?
+    answer: Use ACLs to match client IPs and allow or deny access to specific backends, e.g., `acl allowed_ip src 192.168.1.0/24`.
+
+Kubernetes & Alternatives:
+  - question: What are some alternatives to HAProxy for routing in Kubernetes?
+    answer: NGINX Ingress Controller, Traefik, Istio, and Linkerd.
+  - question: What features do Kubernetes ingress controllers provide that are similar to HAProxy?
+    answer: Features include automatic service discovery, TLS termination, path and host-based routing, and traffic shaping.
+  - question: When would you choose HAProxy over NGINX or Traefik in a cloud-native environment?
+    answer: When you need advanced TCP/HTTP load balancing, high performance, or specific HAProxy features not available in other controllers.
+
+Practical Considerations:
+  - question: What should you keep in mind when exposing a custom port with HAProxy?
+    answer: Ensure the port is open in firewalls/security groups and properly mapped in container or cloud configs.
+  - question: How do you expose HAProxy ports when running it in Docker?
+    answer: Use the `-p` flag, e.g., `docker run -p 8081:8081 haproxy`.
+  - question: How do you monitor HAProxy performance and health?
+    answer: Use HAProxy's built-in stats page, external monitoring tools, or integrate with Prometheus/Grafana.
+
+Troubleshooting & Best Practices:
+  - question: What happens to active connections during a HAProxy reload?
+    answer: Active connections are preserved; only new connections use the updated configuration.
+  - question: How does HAProxy ensure no requests are lost during configuration changes?
+    answer: By performing graceful reloads, HAProxy maintains existing connections until they complete.
+  - question: What are common mistakes when configuring HAProxy for production use?
+    answer: Not enabling health checks, misconfiguring ACLs, failing to secure the admin interface, and not tuning timeouts.
+  - question: How do you debug routing issues in HAProxy?
+    answer: Enable logging, use the stats page, and review configuration for ACL or backend errors.
+
+Scenario-Based Interview Questions:
+  - question: You need to route traffic to three backend services: orders, payments, and users. Each service has two instances. How would you design the HAProxy configuration?
+    answer: Define ACLs for each service path, create separate backends for each service, and list both instances in each backend.
+  - question: If one backend server becomes unhealthy, how does HAProxy handle incoming requests?
+    answer: HAProxy automatically removes the unhealthy server from rotation and routes traffic only to healthy servers.
+  - question: Your application experiences uneven traffic distribution. How would you troubleshoot and resolve this using HAProxy?
+    answer: Check the balancing algorithm, review backend health, and ensure server weights are configured correctly.
+  - question: How would you set up HAProxy to support blue-green deployments?
+    answer: Configure separate backends for blue and green environments and use ACLs or weights to control traffic flow between them.
+  - question: Describe how you would configure HAProxy to allow only certain IP ranges to access a specific backend.
+    answer: Use ACLs to match allowed IP ranges and route requests accordingly, denying others.
+  - question: You need to implement canary releases for a microservice. How can HAProxy help with traffic splitting?
+    answer: Use ACLs and backend weights to send a percentage of traffic to the canary backend and the rest to the stable backend.
+  - question: How would you secure HAProxy against DDoS attacks?
+    answer: Implement rate limiting, connection limits, and use firewalls or security groups to restrict access.
+  - question: If you need to scale HAProxy horizontally, what architecture changes would you consider?
+    answer: Deploy multiple HAProxy instances behind a layer 4 load balancer or DNS round-robin, and use shared configuration management.
+  - question: How would you integrate HAProxy with a service discovery system?
+    answer: Use dynamic configuration tools or scripts to update backend server lists based on service registry changes.
+  - question: Your HAProxy instance is running in a Docker container. How do you persist configuration changes and logs?
+    answer: Mount configuration and log directories as Docker volumes to retain changes and logs outside the container.
+  - question: How would you handle SSL certificate renewal and reload in a zero-downtime manner with HAProxy?
+    answer: Replace the certificate file and perform a graceful reload so active connections are
