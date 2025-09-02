@@ -297,6 +297,7 @@ Then it routes traffic to the right backend.
 ### 🛠️ Example Config
 
 ```haproxy
+
 frontend http-in
     bind *:80
 
